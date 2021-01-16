@@ -90,20 +90,37 @@ def get_pages_with_fn_pct(request):
         .values('document_id') \
         .annotate(pages_with_fn=Count('document_id'))
     
-    combined_pages = []
+    combined_pages = {}
 
+    """
+    Combining two different querysets.
+
+    Each queryset derived by different filter condition, thus it cannot be joined
+    as what #2 shows in the above.
+
+    Brute force solution is double for loop, however the time complexity is O(n^2).
+    My approach is to implement two separate loops to keep the complexity at least O(n) which is
+    far more better than O(n^2)
+    """
+
+    # First loop for total pages.
     for tp_doc in total_pages:
         tp_doc_id = tp_doc['document_id']
 
-        for pwf_doc in pages_with_footnote:
-            pwf_doc_id = pwf_doc['document_id']
+        if not combined_pages.get(tp_doc_id):
+            combined_pages[tp_doc_id] = tp_doc
 
-            if tp_doc_id == pwf_doc_id:
-                tp_doc['pages_with_fn'] = pwf_doc['pages_with_fn']
-                tp_doc['percentage'] = str(round(pwf_doc['pages_with_fn'] / tp_doc['total_pages'], 2) * 100) + '%'
+    # Second loop for pages with footnotes.
+    for pwf_doc in pages_with_footnote:
+        pwf_doc_id = pwf_doc['document_id']
+
+        if combined_pages.get(pwf_doc_id):
+            combined_pages[pwf_doc_id]['pages_with_fn'] = pwf_doc['pages_with_fn']
+            combined_pages[pwf_doc_id]['percentage'] =\
+                str(round(pwf_doc['pages_with_fn'] / combined_pages[pwf_doc_id]['total_pages'], 2) * 100) + '%'
     
-        combined_pages.append(tp_doc)
+    data = list(combined_pages.values())
     
-    return JsonResponse(combined_pages, safe=False)
+    return JsonResponse(data, safe=False)
 
     
