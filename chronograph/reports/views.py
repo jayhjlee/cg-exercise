@@ -95,12 +95,9 @@ def get_pages_with_fn_pct(request):
     """
     Combining two different querysets.
 
-    Each queryset derived by different filter condition, thus it cannot be joined
-    as what #2 shows in the above.
-
     Brute force solution is double for loop, however the time complexity is O(n^2).
     My approach is to implement two separate loops to keep the complexity at least O(n) which is
-    far more better than O(n^2)
+    better than O(n^2)
     """
 
     # First loop for total pages.
