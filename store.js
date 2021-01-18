@@ -214,6 +214,7 @@ const promiseSearch = str => {
 			setTimeout(() => {
 				resolve(searchReport(str));
 			}, 1000);
+			console.log("Loading regular search...");
 		} else {
 			reject("Please refine your search criteria.");
 		}
@@ -226,6 +227,7 @@ const promiseEnhancedSearch = (str, option) => {
 			setTimeout(() => {
 				resolve(enhancedSearch(str, option));
 			}, 2000);
+			console.log("Loading enhanced search...");
 		} else {
 			reject("Please refine your search criteria.");
 		}
@@ -234,6 +236,7 @@ const promiseEnhancedSearch = (str, option) => {
 
 const asyncSearch = async (searchStr, searchOption) => {
 	try {
+		console.log("Loading async searches...");
 		const regSearch = await promiseSearch(searchStr);
 		const enhSearch = await promiseEnhancedSearch(searchStr, searchOption);
 		console.log(regSearch);
@@ -244,4 +247,3 @@ const asyncSearch = async (searchStr, searchOption) => {
 };
 
 asyncSearch("ali", "page");
-console.log("Loading async searches..."); // This will execute first.
