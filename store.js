@@ -134,11 +134,12 @@ const searchReport = searchStr => {
 
 // #3
 /**
- * I would add type of category, which is report, document, page in this particular exercise,
+ * I would add category that the user wants to search within,
+ * which is report, document, page in this particular exercise,
  * as an additional search option along with the search option.
  *
- * This way I think it will decrease the number of iteration
- * which will fetch only relevant data from store following the search option.
+ * I think this approach may decrease the number of iteration
+ * as it will only fetch relevant data from store by lookup the matching key.
  */
 
 // This function is almost similar to the function #2..
@@ -192,6 +193,55 @@ const enhancedSearch = (searchStr, option) => {
 	return "No report found. Please refine your search phrase.";
 };
 
-console.log(mapReportId(store));
-console.log(searchReport("ali"));
-console.log(enhancedSearch("re", "page"));
+///// You can uncomment below to test each function. /////
+
+// console.log(mapReportId(store));
+// console.log(searchReport("sample"));
+// console.log(enhancedSearch("report", "document"));
+
+// #4a / b
+/**
+ * There are three ways to implement asynchronous function. Callback, Promise and Async/Await.
+ * By changing functions in #2 and #3 in async, it will execute concurrently.
+ *
+ * Errors can be handled by either reject in promise or catch block in async/await.
+ */
+
+// Two different promises for each search function.
+const promiseSearch = str => {
+	return new Promise((resolve, reject) => {
+		if (str) {
+			setTimeout(() => {
+				resolve(searchReport(str));
+			}, 1000);
+		} else {
+			reject("Please refine your search criteria.");
+		}
+	});
+};
+
+const promiseEnhancedSearch = (str, option) => {
+	return new Promise((resolve, reject) => {
+		if (str && option) {
+			setTimeout(() => {
+				resolve(enhancedSearch(str, option));
+			}, 2000);
+		} else {
+			reject("Please refine your search criteria.");
+		}
+	});
+};
+
+const asyncSearch = async (searchStr, searchOption) => {
+	try {
+		const regSearch = await promiseSearch(searchStr);
+		const enhSearch = await promiseEnhancedSearch(searchStr, searchOption);
+		console.log(regSearch);
+		console.log(enhSearch);
+	} catch (e) {
+		console.error(e);
+	}
+};
+
+asyncSearch("ali", "page");
+console.log("Loading async searches..."); // This will execute first.
