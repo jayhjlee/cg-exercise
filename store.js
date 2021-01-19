@@ -205,6 +205,7 @@ const enhancedSearch = (searchStr, option) => {
  * By changing functions in #2 and #3 in async, it will execute concurrently.
  *
  * Errors can be handled by either reject in promise or catch block in async/await.
+ * It can be either follow some identifier (ex. status code) or customized descriptive message.
  */
 
 // Two different promises for each search function.
