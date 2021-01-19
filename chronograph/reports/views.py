@@ -29,7 +29,7 @@ def get_report_title(request):
         R.TITLE;
     """
 
-    documents = Document.objects.all();
+    documents = Document.objects.all()
 
     pages = Page.objects.filter(document_id__in=documents.values('id'))
     docs_with_pages = documents.filter(id__in=pages.values('document_id'))
