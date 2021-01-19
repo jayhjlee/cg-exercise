@@ -1,7 +1,9 @@
-# from django.shortcuts import render
+# pylint: disable=maybe-no-member
+
 from django.core import serializers
 from django.http import JsonResponse
-from django.db.models import Count, Sum
+from django.db.models import Count, FloatField
+from django.db.models.functions import Cast
 from .models import Report, Document, Page
 
 def get_report_title(request):
@@ -80,44 +82,18 @@ def get_pages_with_fn_pct(request):
         TP.TOTAL_PAGES,
         PWF.PAGES_WITH_FN;
     """
-    documents = Document.objects.all();
+    
+    documents = Document.objects.all()
 
-    total_pages = Page.objects.filter(document_id__in=documents.values('id')) \
+    pages = Page.objects.filter(document_id__in=documents.values('id')) \
         .values('document_id') \
-        .annotate(total_pages=Count('document_id'))
+        .annotate(pages_with_fn=Count('footnote')) \
+        .annotate(total_pages=Count('document_id')) \
+        .annotate(fn_ratio=Cast(Count('footnote'), FloatField()) / Cast(Count('document_id'), FloatField()))
     
-    pages_with_footnote = Page.objects.filter(footnote__isnull=False) \
-        .values('document_id') \
-        .annotate(pages_with_fn=Count('document_id'))
-    
-    combined_pages = {}
+    for page in pages:
+        page['fn_ratio'] = str(round(page['fn_ratio'], 2) * 100) + "%"
 
-    """
-    Combining two different querysets.
-
-    Brute force solution is double for loop, however the time complexity is O(n^2).
-    My approach is to implement two separate loops to keep the complexity at least O(n) which is
-    better than O(n^2)
-    """
-
-    # First loop for total pages.
-    for tp_doc in total_pages:
-        tp_doc_id = tp_doc['document_id']
-
-        if not combined_pages.get(tp_doc_id):
-            combined_pages[tp_doc_id] = tp_doc
-
-    # Second loop for pages with footnotes.
-    for pwf_doc in pages_with_footnote:
-        pwf_doc_id = pwf_doc['document_id']
-
-        if combined_pages.get(pwf_doc_id):
-            combined_pages[pwf_doc_id]['pages_with_fn'] = pwf_doc['pages_with_fn']
-            combined_pages[pwf_doc_id]['percentage'] =\
-                str(round(pwf_doc['pages_with_fn'] / combined_pages[pwf_doc_id]['total_pages'], 2) * 100) + '%'
-    
-    data = list(combined_pages.values())
-    
-    return JsonResponse(data, safe=False)
+    return JsonResponse(list(pages), safe=False)
 
     
