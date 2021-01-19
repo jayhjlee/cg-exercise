@@ -193,7 +193,7 @@ const enhancedSearch = (searchStr, option) => {
 	return "No report found. Please refine your search phrase.";
 };
 
-///// You can uncomment below to test each function. /////
+///// Please uncomment below to test each function. /////
 
 // console.log(mapReportId(store));
 // console.log(searchReport("sample"));
