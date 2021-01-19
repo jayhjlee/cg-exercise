@@ -81,26 +81,12 @@ const mapReportId = data => {
 };
 
 // #2
-const searchReport = searchStr => {
-	searchStr = searchStr.toLowerCase();
-
-	const { report, document, page } = store;
-
-	const reports = Object.values(report);
-	const documents = Object.values(document);
-	const pages = Object.values(page);
-
-	// Map report id to the each page object.
-	pages.forEach(page => {
-		page["report_id"] = document[page.document_id]["report_id"];
-	});
-
-	// Create single array to search for the reports.
-	const combinedData = reports.concat(documents).concat(pages);
-
+// This is helper function for searchReport and enhancedSearch.
+const fetchReports = (dataset, searchStr) => {
+	const { report } = store;
 	let reportObj = {};
 
-	combinedData.forEach(data => {
+	dataset.forEach(data => {
 		for (key in data) {
 			// Check if key !== 'filetype and the type of value is a string.
 			if (key !== "filetype" && typeof data[key] === "string") {
@@ -132,6 +118,26 @@ const searchReport = searchStr => {
 	return "No report found. Please refine your search phrase.";
 };
 
+const searchReport = searchStr => {
+	searchStr = searchStr.toLowerCase();
+
+	const { report, document, page } = store;
+
+	const reports = Object.values(report);
+	const documents = Object.values(document);
+	const pages = Object.values(page);
+
+	// Map report id to the each page object.
+	pages.forEach(page => {
+		page["report_id"] = document[page.document_id]["report_id"];
+	});
+
+	// Create single array to search for the reports.
+	const combinedData = reports.concat(documents).concat(pages);
+
+	return fetchReports(combinedData, searchStr);
+};
+
 // #3
 /**
  * I would add category that the user wants to search within,
@@ -159,38 +165,7 @@ const enhancedSearch = (searchStr, option) => {
 		});
 	}
 
-	let reportObj = {};
-
-	selectedData.forEach(data => {
-		for (key in data) {
-			// Check if key !== 'filetype and the type of value is a string.
-			if (key !== "filetype" && typeof data[key] === "string") {
-				// Match case with search string.
-				if (data[key].toLowerCase().search(searchStr) !== -1) {
-					// Since combinedData is a combination of report, document and page from store,
-					// some of them are actual report object.
-					// My thought process to check whether the object is NOT a report object is to check if report_id is exists.
-					// If there is a report_id exist, that means that the object is NOT a report object.
-					// Else it is a report object.
-					if (!data.report_id) {
-						// Every report object has its own id.
-						if (!reportObj.hasOwnProperty(data.id)) {
-							reportObj[data.id] = data;
-						}
-					} else {
-						if (!reportObj.hasOwnProperty(data.report_id)) {
-							// Fetch report from original store.
-							reportObj[data.report_id] = store.report[data.report_id];
-						}
-					}
-				}
-			}
-		}
-	});
-
-	if (Object.values(reportObj).length) return Object.values(reportObj);
-
-	return "No report found. Please refine your search phrase.";
+	return fetchReports(selectedData, searchStr);
 };
 
 ///// Please uncomment below to test each function. /////
